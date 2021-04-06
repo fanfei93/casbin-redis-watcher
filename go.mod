@@ -1,4 +1,4 @@
-module github.com/fanfei93/casbin-redis-watcher/v3
+module github.com/fanfei93/casbin-redis-watcher
 
 go 1.12
 
