@@ -51,15 +51,14 @@ const (
 // addr is a redis target string in the format "host:port"
 // setters allows for inline WatcherOptions
 //
-// 		Example:
-// 				w, err := rediswatcher.NewWatcher("127.0.0.1:6379", rediswatcher.Password("pass"), rediswatcher.Channel("/yourchan"))
+//	Example:
+//			w, err := rediswatcher.NewWatcher("127.0.0.1:6379", rediswatcher.Password("pass"), rediswatcher.Channel("/yourchan"))
 //
 // A custom redis.Conn can be provided to NewWatcher
 //
-// 		Example:
-// 				c, err := redis.Dial("tcp", ":6379")
-// 				w, err := rediswatcher.NewWatcher("", rediswatcher.WithRedisConnection(c)
-//
+//	Example:
+//			c, err := redis.Dial("tcp", ":6379")
+//			w, err := rediswatcher.NewWatcher("", rediswatcher.WithRedisConnection(c)
 func NewWatcher(addr string, setters ...WatcherOption) (persist.Watcher, error) {
 	w := &Watcher{
 		closed:     make(chan struct{}),
@@ -219,7 +218,7 @@ func (w *Watcher) connectSub(addr string) error {
 
 func (w *Watcher) dial(addr string) (*redis.Conn, error) {
 	startTime := time.Now()
-	c, err := redis.Dial(w.options.Protocol, addr)
+	c, err := redis.Dial(w.options.Protocol, addr, redis.DialReadTimeout(10*time.Second), redis.DialWriteTimeout(10*time.Second))
 	if err != nil {
 		if w.options.RecordMetrics != nil {
 			w.options.RecordMetrics(w.createMetrics(RedisDialMetric, startTime, err))
