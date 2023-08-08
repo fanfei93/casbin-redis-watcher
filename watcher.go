@@ -218,7 +218,7 @@ func (w *Watcher) connectSub(addr string) error {
 
 func (w *Watcher) dial(addr string) (*redis.Conn, error) {
 	startTime := time.Now()
-	c, err := redis.Dial(w.options.Protocol, addr, redis.DialReadTimeout(10*time.Second), redis.DialWriteTimeout(10*time.Second))
+	c, err := redis.Dial(w.options.Protocol, addr, redis.DialReadTimeout(10*time.Second), redis.DialWriteTimeout(10*time.Second), redis.DialConnectTimeout(10*time.Second))
 	if err != nil {
 		if w.options.RecordMetrics != nil {
 			w.options.RecordMetrics(w.createMetrics(RedisDialMetric, startTime, err))
