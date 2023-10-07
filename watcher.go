@@ -99,7 +99,7 @@ func NewWatcher(addr string, setters ...WatcherOption) (persist.Watcher, error) 
 				if err != nil {
 					fmt.Printf("Failure from Redis subscription: %v\n", err)
 				}
-				time.Sleep(2 * time.Second)
+				// time.Sleep(2 * time.Second)
 			}
 		}
 	}()
@@ -167,6 +167,7 @@ func (w *Watcher) Close() {
 func (w *Watcher) connect(addr string) error {
 	var pubConnErr error
 	if w.pubConn != nil {
+		_, _ = w.pubConn.Do("PING")
 		pubConnErr = w.pubConn.Err()
 	}
 	if w.pubConn == nil || pubConnErr != nil {
@@ -218,7 +219,7 @@ func (w *Watcher) connectSub(addr string) error {
 
 func (w *Watcher) dial(addr string) (*redis.Conn, error) {
 	startTime := time.Now()
-	c, err := redis.Dial(w.options.Protocol, addr, redis.DialReadTimeout(10*time.Second), redis.DialWriteTimeout(10*time.Second), redis.DialConnectTimeout(10*time.Second))
+	c, err := redis.Dial(w.options.Protocol, addr, redis.DialReadTimeout(10*time.Second))
 	if err != nil {
 		if w.options.RecordMetrics != nil {
 			w.options.RecordMetrics(w.createMetrics(RedisDialMetric, startTime, err))
@@ -266,6 +267,7 @@ func (w *Watcher) unsubscribe(psc redis.PubSubConn) {
 }
 
 func (w *Watcher) subscribe() error {
+	_, _ = w.subConn.Do("PING")
 	psc := redis.PubSubConn{Conn: w.subConn}
 	startTime := time.Now()
 	if err := psc.Subscribe(w.options.Channel); err != nil {
@@ -301,6 +303,11 @@ func (w *Watcher) subscribe() error {
 			}
 			if n.Count == 0 {
 				return nil
+			} else {
+				err := psc.Ping("ping")
+				if err != nil {
+					return err
+				}
 			}
 		}
 
